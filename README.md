@@ -15,7 +15,7 @@ FengYun-2_S-VISSR_Decoder.exe -i fengyun_svissr.svissr
 You will get decoded images in decoder folder.
 
 ## Examples (Decoded Images)
-![2](https://github.com/Foxiks/FengYun2-SVISSR-Decoder/blob/main/img/ch1.png)
+![2](https://github.com/Foxiks/FengYun2-SVISSR-Decoder/blob/main/img/ch01.png)
 ![3](https://github.com/Foxiks/FengYun2-SVISSR-Decoder/blob/main/img/ch2.png)
 ![4](https://github.com/Foxiks/FengYun2-SVISSR-Decoder/blob/main/img/ch3.png)
 ![5](https://github.com/Foxiks/FengYun2-SVISSR-Decoder/blob/main/img/ch4.png)
