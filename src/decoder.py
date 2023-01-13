@@ -1,4 +1,4 @@
-import bitstring, time, binascii, os, cv2, numpy, argparse
+import bitstring, time, binascii, os, cv2, numpy, argparse, gc
 start_time = time.time()
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", help="Input binary file")
@@ -81,6 +81,10 @@ if(__name__ == "__main__"):
     print("Saving IR ch3...")
     crop_img3 = grayImage[0:int(l), 7653:9947]
     cv2.imwrite('ch3.png', crop_img3)
+    del crop_img1
+    del crop_img2
+    del crop_img3
+    gc.collect()
     with open(inp, "rb") as ts_all:
         frames = ts_all.read().hex()
         size = os.path.getsize(inp)
@@ -111,25 +115,43 @@ if(__name__ == "__main__"):
     b = bitstring.BitStream(file1).bin
     chunks = [b[i:i+6] for i in range(0, len(b), 6)]
     chunks = [str+'00' for str in chunks]
+    del b
+    del file1
+    gc.collect()
     print('Convert VIS Chunk 2 to 8-bit pattern...')
     file2 = open('chunks.2', 'rb').read()
     b1 = bitstring.BitStream(file2).bin
     chunks1 = [b1[i:i+6] for i in range(0, len(b1), 6)]
     chunks1 = [str+'00' for str in chunks1]
+    del b1
+    del file2
+    gc.collect()
     print('Convert VIS Chunk 3 to 8-bit pattern...')
     file3 = open('chunks.3', 'rb').read()
     b2 = bitstring.BitStream(file3).bin
     chunks2 = [b2[i:i+6] for i in range(0, len(b2), 6)]
     chunks2 = [str+'00' for str in chunks2]
+    del b2
+    del file3
+    gc.collect()
     print('Convert VIS Chunk 4 to 8-bit pattern...')
     file4 = open('chunks.4', 'rb').read()
     b3 = bitstring.BitStream(file4).bin
     chunks3 = [b3[i:i+6] for i in range(0, len(b3), 6)]
     chunks3 = [str+'00' for str in chunks3]
+    del b3
+    del file4
+    gc.collect()
     print('Mixing VIS Chunks...')
     res = [x for y in zip(chunks, chunks1, chunks2, chunks3) for x in y]
     with open('data.mixed', 'wb') as file:
         bitstring.BitArray(bin=''.join(res)).tofile(file)
+    del res
+    del chunks
+    del chunks1
+    del chunks2
+    del chunks3
+    gc.collect()
     with open('data.mixed', "rb") as image:
         f = image.read()
     bbyteArray = bytearray(f)
@@ -144,8 +166,12 @@ if(__name__ == "__main__"):
     b4 = bitstring.BitStream(file5).bin
     chunks10 = [b4[i:i+10] for i in range(0, len(b4), 10)]
     chunks10 = [str[:-2] for str in chunks10]
+    del b4
+    gc.collect()
     with open('ir10.bit', 'wb') as file:
         bitstring.BitArray(bin=''.join(chunks10)).tofile(file)
+    del chunks10
+    gc.collect()
     with open('ir10.bit', "rb") as image:
         f = image.read()
     bbyteArray = bytearray(f)
