@@ -7,7 +7,7 @@ To use this decoder, you need to use FengYun-2 satellite transport frames. This 
 
 Use: 
 ```sh
-Deframer.exe(.py) -i data_from_GR.bin -o data.synced 
+Deframer.exe(.py) -i data_from_GR.bin -o fengyun_svissr.svissr 
 ```
 To use the decoder, use the command:
 ```sh
