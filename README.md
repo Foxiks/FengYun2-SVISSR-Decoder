@@ -3,7 +3,12 @@
 ![1](https://github.com/Foxiks/FengYun2-SVISSR-Decoder/blob/main/img/1.jpg)
 
 ## How to use
-To use this decoder, you need to use FengYun-2 satellite transport frames. This is very easy to get thanks to [SatDump](https://github.com/altillimity/SatDump)
+To use this decoder, you need to use FengYun-2 satellite transport frames. This is very easy to get with the GNU-Radio schema from this repository. After receiving the transport frames, they need to be synchronized and de-randomized.
+
+Use: 
+```sh
+Deframer.exe(.py) -i data_from_GR.bin -o data.synced 
+```
 To use the decoder, use the command:
 ```sh
 python3 decoder.py -i fengyun_svissr.svissr
