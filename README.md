@@ -1,6 +1,6 @@
 # FengYun2-SVISSR-Decoder
 ### This is a decoder of images from the de-randomized transport frames of the FengYun-2 series satellites.
-![1](https://github.com/Foxiks/FengYun2-SVISSR-Decoder/blob/main/img/1.jpg)
+![1](https://github.com/Foxiks/FengYun2-SVISSR-Decoder/blob/main/img/out.gif)
 
 ## How to use
 To use this decoder, you need to use FengYun-2 satellite transport frames. This is very easy to get with the GNU-Radio schema from this repository. After receiving the transport frames, they need to be synchronized and de-randomized.
