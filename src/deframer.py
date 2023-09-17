@@ -33,13 +33,13 @@ def get_frame_bytes(f):
 
 def skip_end_frame(f):
     while(byte := f.read(5025)):
-        return byte
+        return
 
 def main(input_file, sync_marker, sync_buffer, mask, out, out_filename, total_len):
     bit_array=''
     k=0
     n=0
-    for _ in range(total_len):
+    for _ in range(int(total_len+100)):
         if(len(bit_array)<=1):
             bits_array=get_byte(f=input_file)
             k=0
@@ -50,13 +50,14 @@ def main(input_file, sync_marker, sync_buffer, mask, out, out_filename, total_le
             err=int(Levenshtein.hamming(sync_buffer, str(sync_marker)))
             if(err<=int(158)): #158
                 n+=1
-                print(f'New frame! {n} | Sync word: 0x{str(hex(int(sync_buffer, 2)))[-16:].upper()} | BER: {round(float(err/10.24), 1)}% | Sync threshold: {round(float(err/3.68), 1)}%     ', end='\r')
+                print(f'New frame! {n} | Sync word: 0x{str(hex(int(sync_buffer, 2)))[-16:].upper()} | BER: {round(float(err/10.24), 1)}% | Sync threshold: {round(float(err/1.58), 1)}%     ', end='\r')
                 frame=get_frame_bytes(f=f)
                 frame=int(str(bit_array[1:])+str(frame[:int(354848-len(bit_array[1:]))]), 2)
                 derand = pn_derandomizer(data=frame, mask=mask)
                 out.write(int(''.join(byte_inverter(derand)), 2).to_bytes(44356, byteorder='big', signed=False))
                 skip_end_frame(f=f)
         if(bits_array==None):
+            print('Saving data...')
             with open(out_filename, 'wb') as out_bytes_file:
                 out_bytes_file.write(out.getvalue())
             input_file.close()
