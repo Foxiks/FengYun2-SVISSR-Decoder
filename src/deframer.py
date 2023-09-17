@@ -1,9 +1,6 @@
-import Levenshtein, argparse, time, io, os
-parser=argparse.ArgumentParser()
-parser.add_argument("-o", "--output", help="Output binary file name")
-parser.add_argument("-i", "--input", help="Input binary file name")
-inputfile=parser.parse_args().input
-outfile=parser.parse_args().output
+import Levenshtein, time, io, os, sys
+inputfile=sys.argv[1]
+outfile=sys.argv[2]
 
 def PN_mask_generator(mask):
     out=[]
@@ -29,15 +26,15 @@ def byte_inverter(derand):
 def get_byte(f):
     while(byte := f.read(1)):
         return bin(int().from_bytes(byte, 'big'))[2:].zfill(8)
-    
+
 def get_frame_bytes(f):
     while(byte := f.read(44356)):
         return bin(int().from_bytes(byte, 'big'))[2:].zfill(354848)
 
 def skip_end_frame(f):
     while(byte := f.read(5025)):
-        return
-    
+        return byte
+
 def main(input_file, sync_marker, sync_buffer, mask, out, out_filename, total_len):
     bit_array=''
     k=0
