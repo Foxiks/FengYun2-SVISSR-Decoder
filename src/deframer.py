@@ -50,7 +50,7 @@ def main(input_file, sync_marker, sync_buffer, mask, out, out_filename, total_le
             err=int(Levenshtein.hamming(sync_buffer, str(sync_marker)))
             if(err<=int(158)): #158
                 n+=1
-                print(f'New frame! {n} | Sync word: 0x{str(hex(int(sync_buffer, 2)))[-16:].upper()} | BER: {round(float(err/10.24), 1)}% | Sync threshold: {round(float(err/1.58), 1)}%     ', end='\r')
+                print(f'New frame! {n} | Sync word: 0x{str(hex(int(sync_buffer, 2)))[-16:].upper()} | BER: {round(float(err/5.12), 1)}% | Sync threshold: {round(float(err/1.58), 1)}%     ', end='\r')
                 frame=get_frame_bytes(f=f)
                 frame=int(str(bit_array[1:])+str(frame[:int(354848-len(bit_array[1:]))]), 2)
                 derand = pn_derandomizer(data=frame, mask=mask)
