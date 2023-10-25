@@ -50,10 +50,7 @@ def vis_chunks_reader(inp):
         l = int(size)/int(44356)
     os.mkdir("Tmp")
     print('Read VIS Chunks...')
-    f1 = open('Tmp/chunks.1', 'ab')
-    f2 = open('Tmp/chunks.2', 'ab')
-    f3 = open('Tmp/chunks.3', 'ab')
-    f4 = open('Tmp/chunks.4', 'ab')
+    f1 = open('Tmp/chunks.vis', 'ab')
     f5 = open('Tmp/ir10.ch', 'ab')
     while(int(line)<=int(l)):
         frame = frames[back_line:up_line]
@@ -65,75 +62,37 @@ def vis_chunks_reader(inp):
         chunks4 = frame[63203:76955]
         ir10 = frame[82466:88216]
         f1.write(binascii.unhexlify(chunks1))
-        f2.write(binascii.unhexlify(chunks2))
-        f3.write(binascii.unhexlify(chunks3))
-        f4.write(binascii.unhexlify(chunks4))
+        f1.write(binascii.unhexlify(chunks2))
+        f1.write(binascii.unhexlify(chunks3))
+        f1.write(binascii.unhexlify(chunks4))
         f5.write(binascii.unhexlify(ir10))
         line+=1
     f1.close()
-    f2.close()
-    f3.close()
-    f4.close()
     f5.close()
     return
 
-def vis1_chunks_converter():
-    file1 = open('Tmp/chunks.1', 'rb').read()
+def vis_chunks_converter():
+    file1 = open('Tmp/chunks.vis', 'rb').read()
+    file2 = open('Tmp/chunks.visscaled', 'wb')
     b = bitstring.BitStream(file1).bin
     chunks = [b[i:i+6] for i in range(0, len(b), 6)]
     chunks = [str+'00' for str in chunks]
+    bitstring.BitArray(bin=''.join(chunks)).tofile(file2)
+    file2.close()
     del b
     del file1
     gc.collect()
     return chunks
 
-def vis2_chunks_converter():
-    file2 = open('Tmp/chunks.2', 'rb').read()
-    b1 = bitstring.BitStream(file2).bin
-    chunks1 = [b1[i:i+6] for i in range(0, len(b1), 6)]
-    chunks1 = [str+'00' for str in chunks1]
-    del b1
-    del file2
-    gc.collect()
-    return chunks1
-
-def vis3_chunks_converter():
-    file3 = open('Tmp/chunks.3', 'rb').read()
-    b2 = bitstring.BitStream(file3).bin
-    chunks2 = [b2[i:i+6] for i in range(0, len(b2), 6)]
-    chunks2 = [str+'00' for str in chunks2]
-    del b2
-    del file3
-    gc.collect()
-    return chunks2
-
-def vis4_chunks_converter():
-    file4 = open('Tmp/chunks.4', 'rb').read()
-    b3 = bitstring.BitStream(file4).bin
-    chunks3 = [b3[i:i+6] for i in range(0, len(b3), 6)]
-    chunks3 = [str+'00' for str in chunks3]
-    del b3
-    del file4
-    gc.collect()
-    return chunks3
-
-def vis_mixer(chunks, chunks1, chunks2, chunks3):
-    print('Mixing VIS Chunks...')
-    res = [x for y in zip(chunks, chunks1, chunks2, chunks3) for x in y]
-    with open('Tmp/data.mixed', 'wb') as file:
-        bitstring.BitArray(bin=''.join(res)).tofile(file)
-    del res
-
 def vis_saver():
-    with open('Tmp/data.mixed', "rb") as image:
+    with open('Tmp/chunks.visscaled', "rb") as image:
         f = image.read()
     bbyteArray = bytearray(f)
-    grayImage = numpy.array(bbyteArray).reshape(int(l), int(36672))
+    grayImage = numpy.array(bbyteArray).reshape(int(l*4), int(9168))
     print("Saving VIS...")
     cv2.imwrite('CH_VIS.png', grayImage)
     src = cv2.imread('CH_VIS.png', cv2.IMREAD_UNCHANGED)
-    re = cv2.resize(src, (9168, int(l*4)))
-    cv2.imwrite('CH_VIS.png', re)
+    cv2.imwrite('CH_VIS.png', src)
     return
 
 def ir10_saver():
@@ -155,11 +114,8 @@ def ir10_saver():
     return
 
 def rmtmp():
-    os.remove('Tmp/chunks.1')
-    os.remove('Tmp/chunks.2')
-    os.remove('Tmp/chunks.3')
-    os.remove('Tmp/chunks.4')
-    os.remove('Tmp/data.mixed')
+    os.remove('Tmp/chunks.vis')
+    os.remove('Tmp/chunks.visscaled')
     os.remove('Tmp/ir10.bit')
     os.remove('Tmp/ir10.ch')
     os.rmdir('Tmp')
@@ -193,17 +149,10 @@ if(__name__ == "__main__"):
     gc.collect()
     #
     print('Convert VIS Chunks to 8-bit pattern...')
-    chunks = vis1_chunks_converter()
-    chunks1 = vis1_chunks_converter()
-    chunks2 = vis1_chunks_converter()
-    chunks3 = vis1_chunks_converter()
+    chunks = vis_chunks_converter()
     ir10_saver()
     ##
-    vis_mixer(chunks=chunks, chunks1=chunks1, chunks2=chunks2, chunks3=chunks3)
     del chunks
-    del chunks1
-    del chunks2
-    del chunks3
     gc.collect()
     vis_saver()
     print("Done!")
