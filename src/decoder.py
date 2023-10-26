@@ -1,3 +1,4 @@
+from types import NoneType
 import bitstring, time, binascii, os, cv2, numpy, argparse, gc, sys
 from PIL import Image
 from multiprocessing import Process
@@ -40,47 +41,49 @@ def ir_3_saver(grayImage):
     gc.collect()
     return
 
+def get_frame(file):
+    while(byte := file.read(44356)):
+        return byte.hex()
+
 def vis_chunks_reader(inp):
-    line=0
-    back_line=0
-    up_line=88712
-    with open(inp, "rb") as ts_all:
-        frames = ts_all.read().hex()
-        size = os.path.getsize(inp)
-        l = int(size)/int(44356)
+    ts_all = open(inp, "rb")
+    size = int(os.path.getsize(inp)/44356)
     os.mkdir("Tmp")
     print('Read VIS Chunks...')
     f1 = open('Tmp/chunks.vis', 'ab')
-    f5 = open('Tmp/ir10.ch', 'ab')
-    while(int(line)<=int(l)):
-        frame = frames[back_line:up_line]
-        back_line = up_line
-        up_line+=88712
-        chunks1 = frame[20408:34160]
-        chunks2 = frame[34673:48425]
-        chunks3 = frame[48938:62690]
-        chunks4 = frame[63203:76955]
-        ir10 = frame[82466:88216]
-        f1.write(binascii.unhexlify(chunks1))
-        f1.write(binascii.unhexlify(chunks2))
-        f1.write(binascii.unhexlify(chunks3))
-        f1.write(binascii.unhexlify(chunks4))
-        f5.write(binascii.unhexlify(ir10))
-        line+=1
+    f2 = open('Tmp/ir10.ch', 'ab')
+    for _ in range(size):
+        frame = get_frame(ts_all)
+        f1.write(binascii.unhexlify(frame[20408:34160]))
+        f1.write(binascii.unhexlify(frame[34673:48425]))
+        f1.write(binascii.unhexlify(frame[48938:62690]))
+        f1.write(binascii.unhexlify(frame[63203:76955]))
+        f2.write(binascii.unhexlify(frame[82466:88216]))
     f1.close()
-    f5.close()
+    f2.close()
     return
 
+def get_vis_chunk_frame(file):
+    while(byte := file.read(6876)):
+        return str(bin(int().from_bytes(byte, 'big'))[2:].zfill(55008))
+
 def vis_chunks_converter():
-    file1 = open('Tmp/chunks.vis', 'rb').read()
-    file2 = open('Tmp/chunks.visscaled', 'wb')
-    b = bitstring.BitStream(file1).bin
-    chunks = [b[i:i+6] for i in range(0, len(b), 6)]
-    chunks = [str+'00' for str in chunks]
-    bitstring.BitArray(bin=''.join(chunks)).tofile(file2)
-    file2.close()
+    file_vis_input = open('Tmp/chunks.vis', 'rb')
+    file_vis_scaled_output = open('Tmp/chunks.visscaled', 'wb')
+    size = int(os.path.getsize(inp)/6876)
+    for _ in range(size):
+        b = get_vis_chunk_frame(file=file_vis_input)
+        if(type(b)!=NoneType):
+            chunks = [b[i:i+6] for i in range(0, len(b), 6)]
+            chunks = [str+'00' for str in chunks]
+            file_vis_scaled_output.write(int(''.join(chunks), 2).to_bytes(9168, byteorder='big', signed=False))
+        else:
+            break
+    file_vis_scaled_output.close()
+    file_vis_input.close()
     del b
-    del file1
+    del file_vis_scaled_output
+    del file_vis_input
     gc.collect()
     return chunks
 
