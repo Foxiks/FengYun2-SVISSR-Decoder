@@ -1,5 +1,4 @@
-from types import NoneType
-import bitstring, time, binascii, os, cv2, numpy, argparse, gc, sys
+import time, binascii, os, cv2, numpy, argparse, gc, sys
 from PIL import Image
 from multiprocessing import Process
 
@@ -75,9 +74,8 @@ def vis_chunks_converter():
     with open('Tmp/chunks.visscaled', 'wb') as pixel_file:
         i = 0
         four_pixels = bytearray([0,0,0,0])
-        while i < len(data):
+        for i in range(0, len(data), 3):
             four_bytes = data[i]*0x10000 + data[i+1]*0x100 + data[i+2]
-            i += 3
             four_pixels[0] = ((four_bytes >> (18)) & 0x3f) << 2
             four_pixels[1] = ((four_bytes >> (12)) & 0x3f) << 2
             four_pixels[2] = ((four_bytes >> (6)) & 0x3f) << 2
@@ -99,13 +97,15 @@ def vis_saver():
 def ir10_saver():
     print("Saving IR CH-4 (10-bit)...")
     file5 = open('Tmp/ir10.ch', 'rb').read()
-    b4 = bitstring.BitStream(file5).bin
+    b4=bin(int.from_bytes(file5, byteorder='big', signed=False))[2:].zfill(os.path.getsize('Tmp/ir10.ch')*8)
     chunks10 = [b4[i:i+10] for i in range(0, len(b4), 10)]
     del b4
     gc.collect()
     chunks10 = [str+'000000' for str in chunks10]
+    len_c10=int((len(chunks10)*16)/8)
     with open('Tmp/ir10.bit', 'wb') as file:
-      bitstring.BitArray(bin=''.join(chunks10)[8:]+'00000000').tofile(file)
+      file.write(int(''.join(chunks10)[8:], 2).to_bytes(len_c10-1, byteorder='big',signed=False))
+      file.write(b'\x00')
     del chunks10
     gc.collect()
     with open('Tmp/ir10.bit', mode='rb') as f:
@@ -115,21 +115,31 @@ def ir10_saver():
     return
 
 def rmtmp():
-    os.remove('Tmp/chunks.vis')
-    os.remove('Tmp/chunks.visscaled')
-    os.remove('Tmp/ir10.bit')
-    os.remove('Tmp/ir10.ch')
-    os.rmdir('Tmp')
+    try:
+        os.remove('Tmp/chunks.vis')
+        os.remove('Tmp/chunks.visscaled')
+        os.remove('Tmp/ir10.bit')
+        os.remove('Tmp/ir10.ch')
+        os.rmdir('Tmp')
+    except os.error:
+        pass
     return
 
 if(__name__ == "__main__"):
-    print("------------------------------------------------------------------------------------------------")
-    print("                                                                                                ")
-    print("                                     FengYun-2 SVISSR decoder                                   ")
-    print("                                          by Egor UB1QBJ                                        ")
-    print("                                                                                                ")
-    print("------------------------------------------------------------------------------------------------")
+    print("-----------------------------------")
+    print("   FengYun-2 S-VISSR 2.0 decoder   ")
+    print("           by Egor UB1QBJ          ")
+    print("-----------------------------------")
     inp = args.input
+    try:
+        os.rmdir('Tmp')
+        os.remove('Tmp/chunks.vis')
+        os.remove('Tmp/chunks.visscaled')
+        os.remove('Tmp/ir10.bit')
+        os.remove('Tmp/ir10.ch')
+    except os.error:
+        pass
+
     bbyteArray, l = input_data_reader(inp=inp)
     grayImage = numpy.array(bbyteArray).reshape(int(l), int(44356))
 
