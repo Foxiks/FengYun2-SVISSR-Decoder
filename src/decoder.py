@@ -68,24 +68,22 @@ def get_vis_chunk_frame(file):
         return str(bin(int().from_bytes(byte, 'big'))[2:].zfill(55008))
 
 def vis_chunks_converter():
-    file_vis_input = open('Tmp/chunks.vis', 'rb')
-    file_vis_scaled_output = open('Tmp/chunks.visscaled', 'wb')
-    size = int(os.path.getsize(inp)/6876)
-    for _ in range(size):
-        b = get_vis_chunk_frame(file=file_vis_input)
-        if(type(b)!=NoneType):
-            chunks = [b[i:i+6] for i in range(0, len(b), 6)]
-            chunks = [str+'00' for str in chunks]
-            file_vis_scaled_output.write(int(''.join(chunks), 2).to_bytes(9168, byteorder='big', signed=False))
-        else:
-            break
-    file_vis_scaled_output.close()
-    file_vis_input.close()
-    del b
-    del file_vis_scaled_output
-    del file_vis_input
-    gc.collect()
-    return chunks
+    with open('Tmp/chunks.vis', 'rb') as binary_file:
+        data = binary_file.read()
+        data = bytearray(data)
+
+    with open('Tmp/chunks.visscaled', 'wb') as pixel_file:
+        i = 0
+        four_pixels = bytearray([0,0,0,0])
+        while i < len(data):
+            four_bytes = data[i]*0x10000 + data[i+1]*0x100 + data[i+2]
+            i += 3
+            four_pixels[0] = ((four_bytes >> (18)) & 0x3f) << 2
+            four_pixels[1] = ((four_bytes >> (12)) & 0x3f) << 2
+            four_pixels[2] = ((four_bytes >> (6)) & 0x3f) << 2
+            four_pixels[3] = ((four_bytes) & 0x3f) << 2
+            pixel_file.write(four_pixels)
+    return
 
 def vis_saver():
     with open('Tmp/chunks.visscaled', "rb") as image:
@@ -152,11 +150,9 @@ if(__name__ == "__main__"):
     gc.collect()
     #
     print('Convert VIS Chunks to 8-bit pattern...')
-    chunks = vis_chunks_converter()
+    vis_chunks_converter()
     ir10_saver()
     ##
-    del chunks
-    gc.collect()
     vis_saver()
     print("Done!")
     print(str(time.time()-start_time))
