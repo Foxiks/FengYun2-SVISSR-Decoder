@@ -1,4 +1,4 @@
-import time, binascii, os, cv2, numpy, argparse, gc, sys
+import time, os, cv2, numpy, argparse, gc, sys
 from PIL import Image
 from multiprocessing import Process
 
@@ -53,11 +53,11 @@ def vis_chunks_reader(inp):
     f2 = open('Tmp/ir10.ch', 'ab')
     for _ in range(size):
         frame = get_frame(ts_all)
-        f1.write(binascii.unhexlify(frame[20408:34160]))
-        f1.write(binascii.unhexlify(frame[34673:48425]))
-        f1.write(binascii.unhexlify(frame[48938:62690]))
-        f1.write(binascii.unhexlify(frame[63203:76955]))
-        f2.write(binascii.unhexlify(frame[82466:88216]))
+        f1.write(bytes.fromhex(frame[20408:34160]))
+        f1.write(bytes.fromhex(frame[34673:48425]))
+        f1.write(bytes.fromhex(frame[48938:62690]))
+        f1.write(bytes.fromhex(frame[63203:76955]))
+        f2.write(bytes.fromhex(frame[82466:88216]))
     f1.close()
     f2.close()
     return

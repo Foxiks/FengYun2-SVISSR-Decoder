@@ -3,6 +3,7 @@ inputfile=sys.argv[1]
 outfile=sys.argv[2]
 
 def PN_mask_generator(mask):
+    mask=bin(mask)[2:].zfill(15)
     out=[]
     for _ in range(354848):
         x2=mask[14:]
@@ -73,6 +74,6 @@ if(__name__=='__main__'):
     sync = '72CB2EBAE79E5145E79C5149E7B451B9E5945D79CF14A27BCD18AE53E5E85C71C924B6DBB6D9B6D5B6FDB60DB42DB8ED926D6D6F6F63634B4BBBB99995557FFF'
     sync_marker=bin(int(sync, 16))[2:].zfill(int(len(sync)/2)*8)
     sync_buffer=str('0'*int(len(sync_marker)))
-    mask=PN_mask_generator(mask='000000000000001')
+    mask=PN_mask_generator(mask=0x01)
     main(input_file=f, sync_buffer=sync_buffer, sync_marker=sync_marker, mask=mask, out=out_file, out_filename=outfile, total_len=total_len)
     print("--- %s seconds ---" % (time.time() - start_time)+str(' '*50))
