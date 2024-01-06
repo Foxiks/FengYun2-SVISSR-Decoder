@@ -1,4 +1,5 @@
-import Levenshtein, time, io, os, sys
+import time, io, os, sys
+from hexhamming import hamming_distance_string
 inputfile=sys.argv[1]
 outfile=sys.argv[2]
 
@@ -48,7 +49,7 @@ def main(input_file, sync_marker, sync_buffer, mask, out, out_filename, total_le
             bit_array=bits_array[k:]
             k+=1
             sync_buffer=sync_buffer[1:]+bit_array[:1]
-            err=int(Levenshtein.hamming(sync_buffer, str(sync_marker)))
+            err=int(hamming_distance_string(hex(int(sync_buffer,2))[2:].zfill(128), sync))
             if(err<=int(158)): #158
                 n+=1
                 print(f'New frame! {n} | Sync word: 0x{str(hex(int(sync_buffer, 2)))[-16:].upper()} | BER: {round(float(err/5.12), 1)}% | Sync threshold: {round(float(err/1.58), 1)}%     ', end='\r')
