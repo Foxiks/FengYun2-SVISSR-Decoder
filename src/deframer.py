@@ -15,15 +15,16 @@ def PN_mask_generator(mask):
     return int(''.join(out), 2)
 
 def pn_derandomizer(data, mask):
-    return str(bin(int(mask)^int(data)))[2:].zfill(354848)
+    return int(int(mask)^int(data)).to_bytes(44356,'big')
 
 def byte_inverter(derand):
-    chunks=[derand[i:i+8] for i in range(0, len(derand), 8)]
-    f=chunks[::2]
-    s=''.join(chunks[1:][::2])
-    s=''.join(['1' if i == '0' else '0' for i in s])
-    s=[s[i:i+8] for i in range(0, len(s), 8)]
-    return [''.join(x) for x in zip(f, s)]
+    out_bytes_arr=bytearray()
+    in_bytes_arr=bytearray()
+    in_bytes_arr.extend(derand)
+    for i in range(0,44356,2):
+        out_bytes_arr.append(int(in_bytes_arr[i]))
+        out_bytes_arr.append(int((~in_bytes_arr[i+1]) & 0x00ff))
+    return bytes(out_bytes_arr)
 
 def get_byte(f):
     while(byte := f.read(1)):
@@ -70,7 +71,7 @@ def main(input_file, sync_buffer, mask, out, out_filename, total_len):
                 frame=get_frame_bytes(f=input_file)
                 frame=int(str(bit_array[1:])+str(frame[:int(354848-len(bit_array[1:]))]), 2)
                 derand = pn_derandomizer(data=frame, mask=mask)
-                out.write(int(''.join(byte_inverter(derand)), 2).to_bytes(44356, byteorder='big', signed=False))
+                out.write(byte_inverter(derand))
                 skip_end_frame(f=input_file)
             else:
                 bit_noise_counter+=1
